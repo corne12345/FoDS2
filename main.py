@@ -39,6 +39,17 @@ def addIncomeValues(newdf, olddf):
         newdf['income'] = (incomeExtremes[1] + incomeExtremes[0]) / 2
     return newdf
 
+def one_hot_encode (new_df, total_df, column):
+    new_df = pd.concat([new_df, pd.get_dummies(total_df[column])], axis=1)
+    return new_df
+
+# Function to transfer the end and start time of the questionnaire into a duration. Output is addidition to newdf
+def duration_questionnaire(newdf, total_df):
+    total_df['end_q'] = pd.to_datetime(total_df['end_q'])
+    total_df['start_q'] = pd.to_datetime(total_df['start_q'])
+    new_df['dur_quest'] = total_df['end_q'] - total_df['start_q']
+    return new_df
+
 # Function that returns the complete dataframe.
 def getCompleteDF():
     #Read the individual data frames
@@ -64,6 +75,8 @@ def getCompleteDF():
 def getUsefulColumnsDF(total_df):
     newdf = pd.DataFrame()
     newdf = addRatioValues(newdf, total_df, 'image_height', 'image_width', 'image_ratio')
+    newdf = duration_questionnaire(newdf, total_df)
+    newdf = one_hot_encode(newdf, total_df, column='image_filter')
     print(newdf.head())
     return newdf
 
