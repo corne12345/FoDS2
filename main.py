@@ -6,12 +6,24 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
-# Function that adds ratio values to dataframe (f.a.: c = a / b for some arbitrary
-# a, b and c).
+# Function that adds ratio values to new dataframe (f.a.: c = a / b for some
+# arbitrary a, b and c).
 def addRatioValues(newdf, olddf, a, b, c):
     newdf[c] = olddf[a] / olddf[b]
     return newdf
 
+# Function that copies values from some arbitrary column "a" to new dataframe.
+def copyColumnValues(newdf, olddf, a):
+    newdf[a] = olddf[a]
+    return newdf
+
+# Function that add mean values of arbitrary columns "a" and "b" to new
+# dataframe (f.a.: c = (a + b) / 2).
+def addMeanValues(newdf, olddf, a, b, c):
+    newdf[c] = (olddf[a] + olddf[b]) / 2
+    return newdf
+
+# Function that returns the complete dataframe.
 def getCompleteDF():
     #Read the individual data frames
     anp_df = pd.read_pickle(r'Data/anp.pickle')
@@ -32,12 +44,14 @@ def getCompleteDF():
 
     return total_df
 
+# Function that returns dataframe consisting of just the useful columns.
 def getUsefulColumnsDF(total_df):
     newdf = pd.DataFrame()
     newdf = addRatioValues(newdf, total_df, 'image_height', 'image_width', 'image_ratio')
     print(newdf.head())
     return newdf
 
+# Main function.
 def main():
     total_df = getCompleteDF()
     usable_df = getUsefulColumnsDF(total_df)
