@@ -23,32 +23,50 @@ def addMeanValues(newdf, olddf, a, b, c):
     newdf[c] = (olddf[a] + olddf[b]) / 2
     return newdf
 
+def getValue(val1):
+
+    tmp = val1.replace(',', '')
+    tmp = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in tmp)
+    print(tmp)
+    incomeExtremes = [float(i) for i in tmp.split()]
+    print(incomeExtremes)
+    return 0
+    # (incomeExtremes[1] + incomeExtremes[0]) / 2
+
 # Function that adds income values to new dataframe by taking the mean value of
 # the income range or in case of an extreme value, by taking that extreme value.
 def addIncomeValues(newdf, olddf):
-    if olddf['income'] == 'Less than $10,000':
-        newdf['income'] = 10000
-    elif olddf['income'] == '$150,000 or more':
-        newdf['income'] = 150000
-    elif olddf['income'] ==  "I'd rather not disclose this information":
-        newdf['income'] = None
-    else:
-        tmp = olddf['income'].replace(',', '')
-        tmp = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in tmp)
-        incomeExtremes = [float(i) for i in tmp.split()]
-        newdf['income'] = (incomeExtremes[1] + incomeExtremes[0]) / 2
+    olddf.loc[olddf.income == 'Less than $10,000', 'income_new'] = 10000
+    olddf.loc[olddf.income == '$150,000 or more', 'income_new'] = 150000
+    olddf.loc[olddf.income == "I'd rather not disclose this information", 'income_new'] = None
+    olddf.loc[(olddf.income != "I'd rather not disclose this information") &
+                (olddf.income != '$150,000 or more') &
+                (olddf.income != 'Less than $10,000'), 'income_new'] = getValue(olddf.income)
+    newdf = copyColumnValues(newdf, olddf, 'income_new')
+
+    # if olddf['income'] == 'Less than $10,000':
+    #     newdf['income'] = 10000
+    # elif olddf['income'] == '$150,000 or more':
+    #     newdf['income'] = 150000
+    # elif olddf['income'] ==  "I'd rather not disclose this information":
+    #     newdf['income'] = None
+    # else:
+    #     tmp = olddf['income'].replace(',', '')
+    #     tmp = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in tmp)
+    #     incomeExtremes = [float(i) for i in tmp.split()]
+    #     newdf['income'] = (incomeExtremes[1] + incomeExtremes[0]) / 2
     return newdf
 
-def one_hot_encode (new_df, total_df, column):
-    new_df = pd.concat([new_df, pd.get_dummies(total_df[column])], axis=1)
-    return new_df
+def one_hot_encode (newdf, totaldf, column, drop_first=False):
+    newdf = pd.concat([newdf, pd.get_dummies(totaldf[column], drop_first=drop_first)], axis=1)
+    return newdf
 
 # Function to transfer the end and start time of the questionnaire into a duration. Output is addidition to newdf
-def duration_questionnaire(newdf, total_df):
-    total_df['end_q'] = pd.to_datetime(total_df['end_q'])
-    total_df['start_q'] = pd.to_datetime(total_df['start_q'])
-    new_df['dur_quest'] = total_df['end_q'] - total_df['start_q']
-    return new_df
+def duration_questionnaire(newdf, totaldf):
+    totaldf['end_q'] = pd.to_datetime(totaldf['end_q'])
+    totaldf['start_q'] = pd.to_datetime(totaldf['start_q'])
+    newdf['dur_quest'] = totaldf['end_q'] - totaldf['start_q']
+    return newdf
 
 # Function that returns the complete dataframe.
 def getCompleteDF():
@@ -75,9 +93,27 @@ def getCompleteDF():
 def getUsefulColumnsDF(total_df):
     newdf = pd.DataFrame()
     newdf = addRatioValues(newdf, total_df, 'image_height', 'image_width', 'image_ratio')
+    newdf = addRatioValues(newdf, total_df, 'user_followed_by', 'user_follows', 'popularity')
+    newdf = addMeanValues(newdf, total_df, 'face_age_range_high', 'face_age_range_low', 'face_age_mean')
     newdf = duration_questionnaire(newdf, total_df)
     newdf = one_hot_encode(newdf, total_df, column='image_filter')
-    print(newdf.head())
+    newdf = one_hot_encode(newdf, total_df, column='face_gender', drop_first=True)
+    newdf = one_hot_encode(newdf, total_df, column='education')
+    newdf = one_hot_encode(newdf, total_df, column='employed')
+    newdf = one_hot_encode(newdf, total_df, column='gender', drop_first=True)
+    newdf = one_hot_encode(newdf, total_df, column='participate', drop_first=True)
+    newdf = addIncomeValues(newdf, total_df)
+    newdf = copyColumnValues(newdf, total_df, 'data_memorability')
+    newdf = copyColumnValues(newdf, total_df, 'user_followed_by')
+    newdf = copyColumnValues(newdf, total_df, 'user_follows')
+    newdf = copyColumnValues(newdf, total_df, 'user_posted_photos')
+    newdf = copyColumnValues(newdf, total_df, 'comment_count')
+    newdf = copyColumnValues(newdf, total_df, 'like_count')
+    newdf = copyColumnValues(newdf, total_df, 'HAP')
+    newdf = copyColumnValues(newdf, total_df, 'imagecount')
+    newdf = duration_questionnaire(newdf, total_df)
+
+    # print(newdf.head())
     return newdf
 
 # Main function.

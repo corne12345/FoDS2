@@ -6,21 +6,21 @@ Steps to follow:
 Interesting features:
 - Orientation (image_height/image_width)
 - Image filter (one-hot encoding or classification according to media)
-- Data memorability
-- User_bio
+- Data memorability 
+- User_bio *
 - User_follows, User_followed_by
 - Popularity (user_followed_by / user_follows)
 - user_posted_photos
-- anp_sentiment, label (beredening voor ordinaliteit nagaan?)
-- emotion_score, label (beredenering voor ordinaliteit nagaan?)
-- data_amz_label, data_amz_confidence (alles boven x% confidence, onderverdelen in categoriën)
-- Face_gender (gewogen voor confidence)
+- anp_sentiment, label (beredening voor ordinaliteit nagaan?) *
+- emotion_score, label (beredenering voor ordinaliteit nagaan?) *
+- data_amz_label, data_amz_confidence (alles boven x% confidence, onderverdelen in categoriën) *
+- Face_gender (gewogen voor confidence) 
 - face_age_mean (face_age_range_high + face_age_range_low / 2)
-- face_sunglasses, face_beard, face_mustache, ...., emo_confidence
+- face_sunglasses, face_beard, face_mustache, ...., emo_confidence *
 - comment_count
 - like_count
 - gender 
-- born
+- born *
 - education
 - employed
 - income (cleaning nodig)
