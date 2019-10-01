@@ -6,10 +6,15 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
-def main():
+# Function that adds ratio values to dataframe (f.a.: c = a / b for some arbitrary
+# a, b and c).
+def addRatioValues(newdf, olddf, a, b, c):
+    newdf[c] = olddf[a] / olddf[b]
+    return newdf
+
+def getCompleteDF():
     #Read the individual data frames
     anp_df = pd.read_pickle(r'Data/anp.pickle')
-    total_df.head()
     face_df = pd.read_pickle(r'Data/face.pickle')
     image_df = pd.read_pickle(r'Data/image_data.pickle')
     metrics_df = pd.read_pickle(r'Data/image_metrics.pickle')
@@ -25,6 +30,17 @@ def main():
     im_anp_obj_face_metrics_frame['user_id'] =  pd.to_numeric(im_anp_obj_face_metrics_frame['user_id'])
     total_df = pd.merge(im_anp_obj_face_metrics_frame, survey_df, how='left', left_on='user_id', right_on='insta_user_id')
 
+    return total_df
+
+def getUsefulColumnsDF(total_df):
+    newdf = pd.DataFrame()
+    newdf = addRatioValues(newdf, total_df, 'image_height', 'image_width', 'image_ratio')
+    print(newdf.head())
+    return newdf
+
+def main():
+    total_df = getCompleteDF()
+    usable_df = getUsefulColumnsDF(total_df)
 
 if __name__ == "__main__":
     main()
