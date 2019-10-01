@@ -23,38 +23,19 @@ def addMeanValues(newdf, olddf, a, b, c):
     newdf[c] = (olddf[a] + olddf[b]) / 2
     return newdf
 
-def getValue(val1):
+# Function that takes a string of income and transforms it to its averae
+def income_from_string(string):
+    new = ''.join([c for c in string if (c.isdigit() or c=='$')])
+    values = [int(i) for i in new.split('$') if len(i) > 0]
+    try:
+        average = sum(values)/len(values)
+    except:
+        average = 999999
+    return average
 
-    tmp = val1.replace(',', '')
-    tmp = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in tmp)
-    print(tmp)
-    incomeExtremes = [float(i) for i in tmp.split()]
-    print(incomeExtremes)
-    return 0
-    # (incomeExtremes[1] + incomeExtremes[0]) / 2
-
-# Function that adds income values to new dataframe by taking the mean value of
-# the income range or in case of an extreme value, by taking that extreme value.
-def addIncomeValues(newdf, olddf):
-    olddf.loc[olddf.income == 'Less than $10,000', 'income_new'] = 10000
-    olddf.loc[olddf.income == '$150,000 or more', 'income_new'] = 150000
-    olddf.loc[olddf.income == "I'd rather not disclose this information", 'income_new'] = None
-    olddf.loc[(olddf.income != "I'd rather not disclose this information") &
-                (olddf.income != '$150,000 or more') &
-                (olddf.income != 'Less than $10,000'), 'income_new'] = getValue(olddf.income)
-    newdf = copyColumnValues(newdf, olddf, 'income_new')
-
-    # if olddf['income'] == 'Less than $10,000':
-    #     newdf['income'] = 10000
-    # elif olddf['income'] == '$150,000 or more':
-    #     newdf['income'] = 150000
-    # elif olddf['income'] ==  "I'd rather not disclose this information":
-    #     newdf['income'] = None
-    # else:
-    #     tmp = olddf['income'].replace(',', '')
-    #     tmp = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in tmp)
-    #     incomeExtremes = [float(i) for i in tmp.split()]
-    #     newdf['income'] = (incomeExtremes[1] + incomeExtremes[0]) / 2
+# apply function of income_from_string
+def income_transform(newdf, total_df):
+    newdf['income'] = total_df['income'].apply(income_from_string)
     return newdf
 
 def one_hot_encode (newdf, totaldf, column, drop_first=False):
@@ -121,7 +102,6 @@ def getUsefulColumnsDF(total_df):
     newdf = addMeanValues(newdf, total_df, 'face_age_range_high', 'face_age_range_low', 'face_age_mean')
     newdf = duration_questionnaire(newdf, total_df)
     newdf = one_hot_encode(newdf, total_df, column='image_filter')
-<<<<<<< HEAD
     newdf = one_hot_encode(newdf, total_df, column='face_gender', drop_first=True)
     newdf = one_hot_encode(newdf, total_df, column='education')
     newdf = one_hot_encode(newdf, total_df, column='employed')
@@ -137,19 +117,17 @@ def getUsefulColumnsDF(total_df):
     newdf = copyColumnValues(newdf, total_df, 'HAP')
     newdf = copyColumnValues(newdf, total_df, 'imagecount')
     newdf = duration_questionnaire(newdf, total_df)
+    newdf = income_transform(newdf, total_df)
 
     # print(newdf.head())
-=======
     newdf = born_to_age(total_df, newdf)
     print(newdf.head())
->>>>>>> 1b5f9024293cc1ed6f31802ef54e4e75d926f700
     return newdf
 
 # Main function.
 def main():
     total_df = getCompleteDF()
     usable_df = getUsefulColumnsDF(total_df)
-    linear_regression(usable_df, total_df['PERMA'])
 
 if __name__ == "__main__":
     main()
