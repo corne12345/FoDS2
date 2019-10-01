@@ -47,8 +47,22 @@ def one_hot_encode (new_df, total_df, column):
 def duration_questionnaire(newdf, total_df):
     total_df['end_q'] = pd.to_datetime(total_df['end_q'])
     total_df['start_q'] = pd.to_datetime(total_df['start_q'])
-    new_df['dur_quest'] = total_df['end_q'] - total_df['start_q']
-    return new_df
+    newdf['dur_quest'] = (total_df['end_q'] - total_df['start_q']).dt.total_seconds()
+    return newdf
+
+# Function that performs linear regression on a given dataframe and returns coefficients and R-squared
+def linear_regression(total_df, y):
+    total_df['y'] = y
+    total_df = total_df.dropna(axis=0)
+    y = total_df['y']
+    X = total_df.drop(columns=['y'])
+    print(X.head())
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    lr = LinearRegression().fit(X_train, y_train)
+    pred_y = lr.predict(X_test)
+    print('Variance score: %.2f' % r2_score(y_test, pred_y))
+    print('Coefficients:\n', lr.coef_)
+    return
 
 # Function that returns the complete dataframe.
 def getCompleteDF():
