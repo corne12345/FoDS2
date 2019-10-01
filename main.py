@@ -56,7 +56,6 @@ def linear_regression(total_df, y):
     total_df = total_df.dropna(axis=0)
     y = total_df['y']
     X = total_df.drop(columns=['y'])
-    print(X.head())
     X_train, X_test, y_train, y_test = train_test_split(X, y)
     lr = LinearRegression().fit(X_train, y_train)
     pred_y = lr.predict(X_test)
