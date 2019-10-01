@@ -68,6 +68,30 @@ def duration_questionnaire(newdf, totaldf):
     newdf['dur_quest'] = totaldf['end_q'] - totaldf['start_q']
     return newdf
 
+def duration_questionnaire(newdf, total_df):
+    total_df['end_q'] = pd.to_datetime(total_df['end_q'])
+    total_df['start_q'] = pd.to_datetime(total_df['start_q'])
+    newdf['dur_quest'] = (total_df['end_q'] - total_df['start_q']).dt.total_seconds()
+    return newdf
+
+# Function to convert birthyear into age
+def born_to_age (total_df, newdf):
+    newdf['age'] = - (total_df['born'] - 2019)
+    return newdf
+
+# Function that performs linear regression on a given dataframe and returns coefficients and R-squared
+def linear_regression(total_df, y):
+    total_df['y'] = y
+    total_df = total_df.dropna(axis=0)
+    y = total_df['y']
+    X = total_df.drop(columns=['y'])
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    lr = LinearRegression().fit(X_train, y_train)
+    pred_y = lr.predict(X_test)
+    print('Variance score: %.2f' % r2_score(y_test, pred_y))
+    print('Coefficients:\n', lr.coef_)
+    return
+
 # Function that returns the complete dataframe.
 def getCompleteDF():
     #Read the individual data frames
@@ -97,6 +121,7 @@ def getUsefulColumnsDF(total_df):
     newdf = addMeanValues(newdf, total_df, 'face_age_range_high', 'face_age_range_low', 'face_age_mean')
     newdf = duration_questionnaire(newdf, total_df)
     newdf = one_hot_encode(newdf, total_df, column='image_filter')
+<<<<<<< HEAD
     newdf = one_hot_encode(newdf, total_df, column='face_gender', drop_first=True)
     newdf = one_hot_encode(newdf, total_df, column='education')
     newdf = one_hot_encode(newdf, total_df, column='employed')
@@ -114,12 +139,17 @@ def getUsefulColumnsDF(total_df):
     newdf = duration_questionnaire(newdf, total_df)
 
     # print(newdf.head())
+=======
+    newdf = born_to_age(total_df, newdf)
+    print(newdf.head())
+>>>>>>> 1b5f9024293cc1ed6f31802ef54e4e75d926f700
     return newdf
 
 # Main function.
 def main():
     total_df = getCompleteDF()
     usable_df = getUsefulColumnsDF(total_df)
+    linear_regression(usable_df, total_df['PERMA'])
 
 if __name__ == "__main__":
     main()
