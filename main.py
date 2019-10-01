@@ -23,6 +23,22 @@ def addMeanValues(newdf, olddf, a, b, c):
     newdf[c] = (olddf[a] + olddf[b]) / 2
     return newdf
 
+# Function that adds income values to new dataframe by taking the mean value of
+# the income range or in case of an extreme value, by taking that extreme value.
+def addIncomeValues(newdf, olddf):
+    if olddf['income'] == 'Less than $10,000':
+        newdf['income'] = 10000
+    elif olddf['income'] == '$150,000 or more':
+        newdf['income'] = 150000
+    elif olddf['income'] ==  "I'd rather not disclose this information":
+        newdf['income'] = None
+    else:
+        tmp = olddf['income'].replace(',', '')
+        tmp = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in tmp)
+        incomeExtremes = [float(i) for i in tmp.split()]
+        newdf['income'] = (incomeExtremes[1] + incomeExtremes[0]) / 2
+    return newdf
+
 # Function that returns the complete dataframe.
 def getCompleteDF():
     #Read the individual data frames
