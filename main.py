@@ -23,10 +23,8 @@ def addMeanValues(newdf, olddf, a, b, c):
     newdf[c] = (olddf[a] + olddf[b]) / 2
     return newdf
 
-def duration_questionnaire(new_df, total_df):
-    """
-    Function to transfer the end and start time of the questionnaire into a duration. Output is addidition to newdf
-    """
+# Function to transfer the end and start time of the questionnaire into a duration. Output is addidition to newdf
+def duration_questionnaire(newdf, total_df):
     total_df['end_q'] = pd.to_datetime(total_df['end_q'])
     total_df['start_q'] = pd.to_datetime(total_df['start_q'])
     new_df['dur_quest'] = total_df['end_q'] - total_df['start_q']
@@ -57,6 +55,7 @@ def getCompleteDF():
 def getUsefulColumnsDF(total_df):
     newdf = pd.DataFrame()
     newdf = addRatioValues(newdf, total_df, 'image_height', 'image_width', 'image_ratio')
+    newdf = duration_questionnaire(newdf, total_df)
     print(newdf.head())
     return newdf
 
