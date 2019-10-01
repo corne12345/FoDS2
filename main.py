@@ -50,6 +50,11 @@ def duration_questionnaire(newdf, total_df):
     newdf['dur_quest'] = (total_df['end_q'] - total_df['start_q']).dt.total_seconds()
     return newdf
 
+# Function to convert birthyear into age
+def born_to_age (total_df, newdf):
+    newdf['age'] = - (total_df['born'] - 2019)
+    return newdf
+
 # Function that performs linear regression on a given dataframe and returns coefficients and R-squared
 def linear_regression(total_df, y):
     total_df['y'] = y
@@ -90,6 +95,7 @@ def getUsefulColumnsDF(total_df):
     newdf = addRatioValues(newdf, total_df, 'image_height', 'image_width', 'image_ratio')
     newdf = duration_questionnaire(newdf, total_df)
     newdf = one_hot_encode(newdf, total_df, column='image_filter')
+    newdf = born_to_age(total_df, newdf)
     print(newdf.head())
     return newdf
 
@@ -97,6 +103,7 @@ def getUsefulColumnsDF(total_df):
 def main():
     total_df = getCompleteDF()
     usable_df = getUsefulColumnsDF(total_df)
+    linear_regression(usable_df, total_df['PERMA'])
 
 if __name__ == "__main__":
     main()
