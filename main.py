@@ -107,7 +107,7 @@ def getUsefulColumnsDF(total_df):
     newdf = one_hot_encode(newdf, total_df, column='employed')
     newdf = one_hot_encode(newdf, total_df, column='gender', drop_first=True)
     newdf = one_hot_encode(newdf, total_df, column='participate', drop_first=True)
-    newdf = addIncomeValues(newdf, total_df)
+    newdf = income_from_string(newdf, total_df)
     newdf = copyColumnValues(newdf, total_df, 'data_memorability')
     newdf = copyColumnValues(newdf, total_df, 'user_followed_by')
     newdf = copyColumnValues(newdf, total_df, 'user_follows')
