@@ -56,7 +56,7 @@ def duration_questionnaire(newdf, total_df):
     return newdf
 
 # Function to convert birthyear into age
-def born_to_age (total_df, newdf):
+def born_to_age (newdf, total_df):
     newdf['age'] = - (total_df['born'] - 2019)
     return newdf
 
@@ -118,17 +118,14 @@ def getUsefulColumnsDF(total_df):
     newdf = copyColumnValues(newdf, total_df, 'imagecount')
     newdf = duration_questionnaire(newdf, total_df)
     newdf = income_transform(newdf, total_df)
-
-    # print(newdf.head())
-    newdf = born_to_age(total_df, newdf)
-    print(newdf.head())
+    newdf = born_to_age(newdf, total_df)
     return newdf
 
 # Main function.
 def main():
     total_df = getCompleteDF()
     usable_df = getUsefulColumnsDF(total_df)
-    # linear_regression(usable_df, total_df['Perma'])
+    linear_regression(usable_df, total_df['Perma'])
 
 if __name__ == "__main__":
     main()
