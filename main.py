@@ -60,6 +60,21 @@ def born_to_age (newdf, total_df):
     newdf['age'] = - (total_df['born'] - 2019)
     return newdf
 
+# Function to create a correlation matrix, which may be helpful to find interactions
+def create_correlation_matrix(newdf):
+    correlation_matrix = newdf.corr()
+    fig = plt.figure()
+    names = correlation_matrix.columns
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(correlation_matrix, vmin=-1, vmax=1)
+    fig.colorbar(cax)
+    ticks=np.arange(0,newdf.shape[1])
+    ax.set_xticks(ticks)
+    ax.set_yticks(ticks)
+    ax.set_xticklabels(names, rotation='vertical')
+    ax.set_yticklabels(names)
+    plt.show()
+
 # Function that performs linear regression on a given dataframe and returns coefficients and R-squared
 def linear_regression(total_df, y):
     total_df['y'] = y
@@ -76,11 +91,15 @@ def linear_regression(total_df, y):
 # Function that returns the complete dataframe.
 def getCompleteDF():
     #Read the individual data frames
-    anp_df = pd.read_pickle(r'Data/anp.pickle')
-    face_df = pd.read_pickle(r'Data/face.pickle')
+    anp_df = pd.read_pickle(r'Data/anp.pickle').sort_values('emotion_score', ascending=False).drop_duplicates(['image_id'])
+    print(anp_df.shape)
+    face_df = pd.read_pickle(r'Data/face.pickle').sort_values('emo_confidence', ascending=False).drop_duplicates(['image_id'])
+    print(face_df.shape)
     image_df = pd.read_pickle(r'Data/image_data.pickle')
-    metrics_df = pd.read_pickle(r'Data/image_metrics.pickle')
-    object_labels_df = pd.read_pickle(r'Data/object_labels.pickle')
+    metrics_df = pd.read_pickle(r'Data/image_metrics.pickle').sort_values('like_count', ascending=False).drop_duplicates(['image_id'])
+    print(metrics_df.shape)
+    object_labels_df = pd.read_pickle(r'Data/object_labels.pickle').sort_values('data_amz_label_confidence', ascending=False).drop_duplicates(['image_id'])
+    print(object_labels_df.shape)
     survey_df = pd.read_pickle(r'Data/survey.pickle')
 
     # Merge them based on the image_id so that we have a large data frame containing all the elements
@@ -90,8 +109,9 @@ def getCompleteDF():
     im_anp_obj_face_metrics_frame = pd.merge(im_anp_obj_face_frame, metrics_df, how='inner', on='image_id')
     survey_df['insta_user_id'] = pd.to_numeric(survey_df['insta_user_id'])
     im_anp_obj_face_metrics_frame['user_id'] =  pd.to_numeric(im_anp_obj_face_metrics_frame['user_id'])
-    total_df = pd.merge(im_anp_obj_face_metrics_frame, survey_df, how='left', left_on='user_id', right_on='insta_user_id')
+    total_df = pd.merge(im_anp_obj_face_metrics_frame, survey_df, how='inner', left_on='user_id', right_on='insta_user_id')
 
+    print(total_df.shape)
     return total_df
 
 # Function that returns dataframe consisting of just the useful columns.
@@ -125,7 +145,7 @@ def getUsefulColumnsDF(total_df):
 def main():
     total_df = getCompleteDF()
     usable_df = getUsefulColumnsDF(total_df)
-    linear_regression(usable_df, total_df['Perma'])
+    linear_regression(usable_df, total_df['PERMA'])
 
 if __name__ == "__main__":
     main()
