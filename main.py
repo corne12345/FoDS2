@@ -77,7 +77,7 @@ def create_correlation_matrix(newdf):
     ax.set_xticklabels(names, rotation='vertical')
     ax.set_yticklabels(names)
     plt.show()
-
+    
 # Function that performs linear regression on a given dataframe and returns coefficients and R-squared
 def linear_regression(total_df, y, method="LR"):
     total_df['y'] = y
@@ -94,8 +94,7 @@ def linear_regression(total_df, y, method="LR"):
         lr = Ridge().fit(X_train, y_train)
     pred_y_train = lr.predict(X_train)
     pred_y_test = lr.predict(X_test)
-    total_df['pred_y'] = lr.predict(X)
-    total_df['true_y'] = y
+    
     print('Variance score on training set: %.2f' % r2_score(y_train, pred_y_train))
     print('Variance score on test set: %.2f' % r2_score(y_test, pred_y_test))
     print('Coefficients:\n', lr.coef_)
@@ -103,24 +102,27 @@ def linear_regression(total_df, y, method="LR"):
     print(len(temp), len(list(lr.coef_)))
     for i in range(len(temp)):
         print(temp[i], list(lr.coef_)[i], sep='\t\t\t')
-    return X
+    X['pred_y'] = lr.predict(X)
+    X['true_y'] = y
+    return X[['user_id', 'pred_y', 'true_y']]
 
-def split_according_to_user(X,y, part = 0.8):
-    users = list(X['user_id'].unique())
+def split_according_to_user(Xtemp,y, part = 0.8):
+    users = list(Xtemp['user_id'].unique())
     shuffle(users)
     trainers = users[:round(part * len(users))]
     testers = users[round(part * len(users)):]
     print(len(trainers), len(testers))
-    X['y'] = y
-    X_train = X[X['user_id'].isin(trainers)]
-    X_test = X[X['user_id'].isin(testers)]
+    Xtemp['y'] = y
+    X_train = Xtemp[Xtemp['user_id'].isin(trainers)]
+    X_test = Xtemp[Xtemp['user_id'].isin(testers)]
     y_train = X_train['y']
     y_test = X_test['y']
     X_train = X_train.drop(columns='y')
     X_test = X_test.drop(columns='y')
-    X = X.drop(columns='y')
-    print(X_train.shape, X_test.shape)
+    Xtemp = Xtemp.drop(columns='y')
+    print(X_train.shape, X_test.shape, Xtemp.shape)
     return X_train, X_test, y_train, y_test
+
 
 # Function that returns the complete dataframe.
 def getCompleteDF():
@@ -153,17 +155,19 @@ def getUsefulColumnsDF(total_df):
     newdf = one_hot_encode(newdf, total_df, column='image_filter')
     newdf = one_hot_encode(newdf, total_df, column='face_gender', drop_first=True)
     newdf = one_hot_encode(newdf, total_df, column='education')
+    newdf = one_hot_encode(newdf, total_df, column='emotion_label')
     newdf = one_hot_encode(newdf, total_df, column='employed')
     newdf = one_hot_encode(newdf, total_df, column='gender', drop_first=True)
     newdf = one_hot_encode(newdf, total_df, column='participate', drop_first=True)
     newdf = income_transform(newdf, total_df)
     newdf = copyColumnValues(newdf, total_df, 'data_memorability')
+    newdf = copyColumnValues(newdf, total_df, 'emotion_score')
     newdf = copyColumnValues(newdf, total_df, 'user_followed_by')
     newdf = copyColumnValues(newdf, total_df, 'user_follows')
     newdf = copyColumnValues(newdf, total_df, 'user_posted_photos')
     newdf = copyColumnValues(newdf, total_df, 'comment_count')
     newdf = copyColumnValues(newdf, total_df, 'like_count')
-    # newdf = copyColumnValues(newdf, total_df, 'HAP')
+#     newdf = copyColumnValues(newdf, total_df, 'HAP')
     newdf = copyColumnValues(newdf, total_df, 'imagecount')
     newdf = copyColumnValues(newdf, total_df, 'user_id')
     newdf = duration_questionnaire(newdf, total_df)
