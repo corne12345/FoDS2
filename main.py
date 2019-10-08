@@ -52,6 +52,12 @@ def duration_questionnaire(newdf, totaldf):
     newdf['dur_quest'] = totaldf['end_q'] - totaldf['start_q']
     return newdf
 
+def duration_questionnaire(newdf, total_df):
+    total_df['end_q'] = pd.to_datetime(total_df['end_q'])
+    total_df['start_q'] = pd.to_datetime(total_df['start_q'])
+    newdf['dur_quest'] = (total_df['end_q'] - total_df['start_q']).dt.total_seconds()
+    return newdf
+
 # Function to convert birthyear into age
 def born_to_age (newdf, total_df):
     newdf['age'] = - (total_df['born'] - 2019)
@@ -78,9 +84,8 @@ def linear_regression(total_df, y, method="LR"):
     total_df = total_df.dropna(axis=0)
     y = total_df['y']
     X = total_df.drop(columns=['y'])
-#     X_train, X_test, y_train, y_test = train_test_split(X, y)
-    X_train, X_test, y_train, y_test = split_according_to_user(X,y)
-    print(X_train.shape)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+#     X_train, X_test, y_train, y_test = split_according_to_user(X,y)
     if method == "LR":
         lr = LinearRegression().fit(X_train, y_train)
     if method == "Lasso":
@@ -89,14 +94,17 @@ def linear_regression(total_df, y, method="LR"):
         lr = Ridge().fit(X_train, y_train)
     pred_y_train = lr.predict(X_train)
     pred_y_test = lr.predict(X_test)
-    total_df['pred_y'] = lr.predict(X.drop(columns='y'))
+    total_df['pred_y'] = lr.predict(X)
     total_df['true_y'] = y
     print('Variance score on training set: %.2f' % r2_score(y_train, pred_y_train))
     print('Variance score on test set: %.2f' % r2_score(y_test, pred_y_test))
     print('Coefficients:\n', lr.coef_)
+    temp = list(X.columns)
+    print(len(temp), len(list(lr.coef_)))
+    for i in range(len(temp)):
+        print(temp[i], list(lr.coef_)[i], sep='\t\t\t')
     return X
 
-# Function to split Dataframe according to user and not totally random
 def split_according_to_user(X,y, part = 0.8):
     users = list(X['user_id'].unique())
     shuffle(users)
@@ -110,6 +118,7 @@ def split_according_to_user(X,y, part = 0.8):
     y_test = X_test['y']
     X_train = X_train.drop(columns='y')
     X_test = X_test.drop(columns='y')
+    X = X.drop(columns='y')
     print(X_train.shape, X_test.shape)
     return X_train, X_test, y_train, y_test
 
@@ -154,8 +163,9 @@ def getUsefulColumnsDF(total_df):
     newdf = copyColumnValues(newdf, total_df, 'user_posted_photos')
     newdf = copyColumnValues(newdf, total_df, 'comment_count')
     newdf = copyColumnValues(newdf, total_df, 'like_count')
-    newdf = copyColumnValues(newdf, total_df, 'HAP')
+    # newdf = copyColumnValues(newdf, total_df, 'HAP')
     newdf = copyColumnValues(newdf, total_df, 'imagecount')
+    newdf = copyColumnValues(newdf, total_df, 'user_id')
     newdf = duration_questionnaire(newdf, total_df)
     newdf = income_transform(newdf, total_df)
     newdf = born_to_age(newdf, total_df)
