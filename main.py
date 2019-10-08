@@ -5,6 +5,9 @@ from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Lasso
+from sklearn.linear_model import Ridge
+from random import shuffle
 
 # Function that adds ratio values to new dataframe (f.a.: c = a / b for some
 # arbitrary a, b and c).
@@ -49,12 +52,6 @@ def duration_questionnaire(newdf, totaldf):
     newdf['dur_quest'] = totaldf['end_q'] - totaldf['start_q']
     return newdf
 
-def duration_questionnaire(newdf, total_df):
-    total_df['end_q'] = pd.to_datetime(total_df['end_q'])
-    total_df['start_q'] = pd.to_datetime(total_df['start_q'])
-    newdf['dur_quest'] = (total_df['end_q'] - total_df['start_q']).dt.total_seconds()
-    return newdf
-
 # Function to convert birthyear into age
 def born_to_age (newdf, total_df):
     newdf['age'] = - (total_df['born'] - 2019)
@@ -76,17 +73,45 @@ def create_correlation_matrix(newdf):
     plt.show()
 
 # Function that performs linear regression on a given dataframe and returns coefficients and R-squared
-def linear_regression(total_df, y):
+def linear_regression(total_df, y, method="LR"):
     total_df['y'] = y
     total_df = total_df.dropna(axis=0)
     y = total_df['y']
     X = total_df.drop(columns=['y'])
-    X_train, X_test, y_train, y_test = train_test_split(X, y)
-    lr = LinearRegression().fit(X_train, y_train)
-    pred_y = lr.predict(X_test)
-    print('Variance score: %.2f' % r2_score(y_test, pred_y))
+#     X_train, X_test, y_train, y_test = train_test_split(X, y)
+    X_train, X_test, y_train, y_test = split_according_to_user(X,y)
+    print(X_train.shape)
+    if method == "LR":
+        lr = LinearRegression().fit(X_train, y_train)
+    if method == "Lasso":
+        lr = Lasso().fit(X_train, y_train)
+    if method == "Ridge":
+        lr = Ridge().fit(X_train, y_train)
+    pred_y_train = lr.predict(X_train)
+    pred_y_test = lr.predict(X_test)
+    total_df['pred_y'] = lr.predict(X.drop(columns='y'))
+    total_df['true_y'] = y
+    print('Variance score on training set: %.2f' % r2_score(y_train, pred_y_train))
+    print('Variance score on test set: %.2f' % r2_score(y_test, pred_y_test))
     print('Coefficients:\n', lr.coef_)
-    return
+    return X
+
+# Function to split Dataframe according to user and not totally random
+def split_according_to_user(X,y, part = 0.8):
+    users = list(X['user_id'].unique())
+    shuffle(users)
+    trainers = users[:round(part * len(users))]
+    testers = users[round(part * len(users)):]
+    print(len(trainers), len(testers))
+    X['y'] = y
+    X_train = X[X['user_id'].isin(trainers)]
+    X_test = X[X['user_id'].isin(testers)]
+    y_train = X_train['y']
+    y_test = X_test['y']
+    X_train = X_train.drop(columns='y')
+    X_test = X_test.drop(columns='y')
+    print(X_train.shape, X_test.shape)
+    return X_train, X_test, y_train, y_test
 
 # Function that returns the complete dataframe.
 def getCompleteDF():
